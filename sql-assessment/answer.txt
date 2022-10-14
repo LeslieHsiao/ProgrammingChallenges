@@ -1,0 +1,80 @@
+-- Leslie Hsiao
+-- Question 0
+SELECT *
+FROM public."Marketing"
+LIMIT 2;
+/* By using limit two, we can get the first two value in the marketing dataset.*/
+
+-- Question 1
+SELECT SUM(clicks)
+FROM public."Marketing";
+/* Using the sum function, we can get the sum of clicks in marketing data set.*/
+
+-- Question 2
+SELECT store_location, SUM(revenue) AS sum_per_location
+FROM public."Store_revenue"
+GROUP BY 1;
+/* Group by store and then using sum function, we can get the sum of the revenue 
+in store_revenue for each store.*/
+
+-- Question 3
+WITH CTE AS(
+SELECT *,substring(store_location,15,2) AS geo
+FROM public."Store_revenue")
+SELECT a.date, a.geo,impressions,clicks,revenue
+FROM public."Marketing" a
+FULL OUTER JOIN cte 
+ON a.date = cte.date AND a.geo = cte.geo
+WHERE a.date IS NOT NULL AND a.geo IS NOT NULL;
+/* The first step is to take the last two character from store_location, by this
+we are able to get all the state in store_revenue data set. In order to have all 
+the information in both marketing and store_revenue data sets, I use the full outer
+join function which will include all the information in both data sets. To connect
+both data set togehter, using on statement will join values in marketing and store_revenue
+but since some of the values only exist in only one data set. Some values in our output
+will have null values.*/
+
+-- Question 4
+WITH CTE AS(
+SELECT *, SUBSTRING(store_location,15,2) AS geo
+FROM public."Store_revenue"),
+CTE2 AS(
+SELECT a.date, a.geo, impressions, clicks, revenue
+FROM public."Marketing" a
+FULL OUTER join cte 
+ON a.date = cte.date AND a.geo = cte.geo
+WHERE a.geo IS NOT NULL)
+SELECT geo, SUM(revenue) AS total_revenue, ROUND(avg(revenue),2) AS avg_revenue, SUM(impressions) AS sum_impressions, ROUND(AVG(impressions),2) AS avg_impressions, SUM(clicks) AS sum_clicks, ROUND(AVG(clicks),2) AS avg_clicks
+FROM cte2
+GROUP BY geo;
+/* The first step is to follow the step we did in question 3, to get the combining dataset.
+And the next step is to find the most efficient store, I use both sum function and 
+average function, the reason why I am using these two functions is because the first
+function will help us to find the store that have the most revenue and the second function
+will help us to find the store that produce most revenue in average.*/
+/* I think that CA store is the most efficient store since it produces the most total revenue,
+having the highest clicks along with the highest impressions. Having the highest revenue
+indicates that the store are generating the most revenue and the highest impressions
+indicates that the store are having good impressions from their customers, along with the
+most clicks also shows that CA store produces the most clicks. The reason why I do not
+think MN is the most efficient store is because it does not have any revenue. Even though
+it has higher impressions and higher clicks than CA. But if a store does not produces
+sufficent enough revenue, the store cannot be dedine as a efficient store.*/
+
+-- Question 5
+SELECT store_location, SUM(revenue) AS total
+FROM public."Store_revenue"
+GROUP BY 1
+ORDER BY total DESC
+LIMIT 10;
+/* To find the top 10 revenue producing states, I first group by our data set based on
+the store location, and then using sum function can help us to find the overall revenue
+for each state. Since we only want the top 10 states the generate the most revenue, I first
+order by the toal revenue in descending order and I set the limit to be two, which will only 
+show the top 10 stores in our final output.*/
+
+
+
+
+
+
